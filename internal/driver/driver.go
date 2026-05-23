@@ -3,11 +3,12 @@ package driver
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"time"
+
 	_ "github.com/jackc/pgconn" // need this and next two for pgx
 	_ "github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"log"
-	"time"
 )
 
 // DB holds the database connection information
@@ -17,9 +18,11 @@ type DB struct {
 
 var dbConn = &DB{}
 
-const maxOpenDbConn = 25
-const maxIdleDbConn = 25
-const maxDbLifetime = 5 * time.Minute
+const (
+	maxOpenDBConn = 25
+	maxIdleDBConn = 25
+	maxDBLifetime = 5 * time.Minute
+)
 
 // ConnectPostgres creates database pool for postgres
 func ConnectPostgres(dsn string) (*DB, error) {
@@ -28,9 +31,9 @@ func ConnectPostgres(dsn string) (*DB, error) {
 		panic(err)
 	}
 
-	d.SetMaxOpenConns(maxOpenDbConn)
-	d.SetMaxIdleConns(maxIdleDbConn)
-	d.SetConnMaxLifetime(maxDbLifetime)
+	d.SetMaxOpenConns(maxOpenDBConn)
+	d.SetMaxIdleConns(maxIdleDBConn)
+	d.SetConnMaxLifetime(maxDBLifetime)
 	dbConn.SQL = d
 
 	err = testDB(err, d)

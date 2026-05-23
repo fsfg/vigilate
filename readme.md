@@ -29,7 +29,7 @@ env GOOS=linux GOARCH=amd64 go build -o vigilate cmd/web/*.go
 
 Vigilate requires:
 - Postgres 11 or later (db is set up as a repository, so other databases are possible)
-- An account with [Pusher](https://pusher.com/), or a Pusher alternative 
+- An account with [Pusher](https://pusher.com/), or a Pusher alternative
 (like [ipê](https://github.com/dimiro1/ipe))
 
 ## Run
@@ -39,7 +39,7 @@ First, make sure ipê is running (if you're using ipê):
 On Mac/Linux
 ~~~
 cd ipe
-./ipe 
+./ipe
 ~~~
 
 On Windows
@@ -97,4 +97,3 @@ Usage of ./vigilate:
    -pusherSecure
         pusher server uses SSL (true or false)
 ~~~~
-

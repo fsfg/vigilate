@@ -3,18 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/pusher/pusher-http-go"
+
 	"github.com/tsawler/vigilate/internal/channeldata"
 	"github.com/tsawler/vigilate/internal/config"
 	"github.com/tsawler/vigilate/internal/driver"
 	"github.com/tsawler/vigilate/internal/handlers"
 	"github.com/tsawler/vigilate/internal/helpers"
-	"log"
-	"net/http"
-	"os"
-	"time"
 )
 
 func setupApp() (*string, error) {
@@ -106,7 +108,7 @@ func setupApp() (*string, error) {
 	handlers.NewHandlers(repo, &app)
 
 	log.Println("Getting preferences...")
-	preferenceMap = make(map[string]string)
+	preferenceMap = map[string]string{}
 	preferences, err := repo.DB.AllPreferences()
 	if err != nil {
 		log.Fatal("Cannot read preferences:", err)
@@ -147,8 +149,7 @@ func setupApp() (*string, error) {
 func createDirIfNotExist(path string) error {
 	const mode = 0755
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err := os.Mkdir(path, mode)
-		if err != nil {
+		if err := os.Mkdir(path, mode); err != nil {
 			log.Println(err)
 			return err
 		}

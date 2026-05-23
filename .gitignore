@@ -6,3 +6,5 @@ run.bat
 vigilate
 .DS_Store
 *.code-workspace
+*/_build/**
+ipe/ipe

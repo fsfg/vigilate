@@ -3,10 +3,12 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
-	"github.com/tsawler/vigilate/internal/models"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/tsawler/vigilate/internal/models"
 )
 
 // AllUsers returns all users
@@ -48,7 +50,7 @@ func (m *postgresDBRepo) GetUserById(id int) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `SELECT id, first_name, last_name,  user_active, access_level, email, 
+	stmt := `SELECT id, first_name, last_name,  user_active, access_level, email,
 			created_at, updated_at
 			FROM users where id = $1`
 	row := m.DB.QueryRowContext(ctx, stmt, id)
@@ -84,11 +86,11 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 	var userActive int
 
 	query := `
-		select 
-		    id, password, user_active 
-		from 
-			users 
-		where 
+		select
+		    id, password, user_active
+		from
+			users
+		where
 			email = $1
 			and deleted_at is null`
 
@@ -167,12 +169,12 @@ func (m *postgresDBRepo) InsertUser(u models.User) (int, error) {
 	}
 
 	stmt := `
-	INSERT INTO users 
+	INSERT INTO users
 	    (
-		first_name, 
-		last_name, 
-		email, 
-		password, 
+		first_name,
+		last_name,
+		email,
+		password,
 		access_level,
 		user_active
 		)
@@ -199,13 +201,13 @@ func (m *postgresDBRepo) UpdateUser(u models.User) error {
 	defer cancel()
 
 	stmt := `
-		update 
-			users 
-		set 
-			first_name = $1, 
-			last_name = $2, 
-			user_active = $3, 
-			email = $4, 
+		update
+			users
+		set
+			first_name = $1,
+			last_name = $2,
+			user_active = $3,
+			email = $4,
 			access_level = $5,
 			updated_at = $6
 		where
