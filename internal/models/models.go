@@ -1,3 +1,4 @@
+// Package models
 package models
 
 import (
@@ -40,7 +41,7 @@ type Preference struct {
 	UpdatedAt  time.Time
 }
 
-// Host model
+// Host is the model for hosts
 type Host struct {
 	ID            int
 	HostName      string
@@ -53,9 +54,10 @@ type Host struct {
 	Active        int
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+	HostServices  []HostService
 }
 
-// Service model
+// Service is the model for services
 type Service struct {
 	ID          int
 	ServiceName string
@@ -65,7 +67,7 @@ type Service struct {
 	UpdatedAt   time.Time
 }
 
-// HostService model
+// HostService is the model for host services
 type HostService struct {
 	ID             int
 	HostID         int
@@ -77,4 +79,13 @@ type HostService struct {
 	LastCheck      time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+	Service        Service
+	HostName       string
+}
+
+type AllServiceStatusCounts struct {
+	Pending int
+	Healthy int
+	Warning int
+	Problem int
 }

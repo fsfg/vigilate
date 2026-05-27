@@ -1,3 +1,4 @@
+// Package channeldata
 package channeldata
 
 import "html/template"

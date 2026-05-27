@@ -91,7 +91,7 @@ func (repo *DBRepo) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// we authenticated. Get the user.
-	u, err := repo.DB.GetUserById(id)
+	u, err := repo.DB.GetUserByID(id)
 	if err != nil {
 		log.Println(err)
 		ClientError(w, r, http.StatusBadRequest)

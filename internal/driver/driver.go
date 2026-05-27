@@ -1,3 +1,4 @@
+// Package driver
 package driver
 
 import (
@@ -36,14 +37,14 @@ func ConnectPostgres(dsn string) (*DB, error) {
 	d.SetConnMaxLifetime(maxDBLifetime)
 	dbConn.SQL = d
 
-	err = testDB(err, d)
+	err = testDB(d)
 
 	return dbConn, err
 }
 
 // testDB pings database
-func testDB(err error, d *sql.DB) error {
-	err = d.Ping()
+func testDB(d *sql.DB) error {
+	err := d.Ping()
 	if err != nil {
 		fmt.Println("Error!", err)
 	} else {

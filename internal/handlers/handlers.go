@@ -1,6 +1,8 @@
+// Package handlers
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -44,30 +46,40 @@ func NewPostgresqlHandlers(db *driver.DB, a *config.AppConfig) *DBRepo {
 
 // AdminDashboard displays the dashboard
 func (repo *DBRepo) AdminDashboard(w http.ResponseWriter, r *http.Request) {
-	vars := make(jet.VarMap)
-	vars.Set("no_healthy", 0)
-	vars.Set("no_problem", 0)
-	vars.Set("no_pending", 0)
-	vars.Set("no_warning", 0)
-
-	err := helpers.RenderPage(w, r, "dashboard", vars, nil)
+	ssc, err := repo.DB.GetAllServiceStatusCounts()
 	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	vars := make(jet.VarMap)
+	vars.Set("no_healthy", ssc.Healthy)
+	vars.Set("no_problem", ssc.Problem)
+	vars.Set("no_pending", ssc.Pending)
+	vars.Set("no_warning", ssc.Warning)
+
+	allHosts, err := repo.DB.AllHosts()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	vars.Set("hosts", allHosts)
+
+	if err = helpers.RenderPage(w, r, "dashboard", vars, nil); err != nil {
 		printTemplateError(w, err)
 	}
 }
 
 // Events displays the events page
 func (repo *DBRepo) Events(w http.ResponseWriter, r *http.Request) {
-	err := helpers.RenderPage(w, r, "events", nil, nil)
-	if err != nil {
+	if err := helpers.RenderPage(w, r, "events", nil, nil); err != nil {
 		printTemplateError(w, err)
 	}
 }
 
 // Settings displays the settings page
 func (repo *DBRepo) Settings(w http.ResponseWriter, r *http.Request) {
-	err := helpers.RenderPage(w, r, "settings", nil, nil)
-	if err != nil {
+	if err := helpers.RenderPage(w, r, "settings", nil, nil); err != nil {
 		printTemplateError(w, err)
 	}
 }
@@ -121,18 +133,90 @@ func (repo *DBRepo) PostSettings(w http.ResponseWriter, r *http.Request) {
 
 // AllHosts displays list of all hosts
 func (repo *DBRepo) AllHosts(w http.ResponseWriter, r *http.Request) {
-	err := helpers.RenderPage(w, r, "hosts", nil, nil)
+	// get all hosts from database
+	hosts, err := repo.DB.AllHosts()
 	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// send data to template
+	vars := make(jet.VarMap)
+	vars.Set("hosts", hosts)
+
+	if err = helpers.RenderPage(w, r, "hosts", vars, nil); err != nil {
 		printTemplateError(w, err)
 	}
 }
 
 // Host shows the host add/edit form
 func (repo *DBRepo) Host(w http.ResponseWriter, r *http.Request) {
-	err := helpers.RenderPage(w, r, "host", nil, nil)
-	if err != nil {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+
+	var h models.Host
+
+	if id > 0 {
+		// get the host from the database
+		host, err := repo.DB.GetHostByID(id)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		h = host
+	}
+
+	vars := make(jet.VarMap)
+	vars.Set("host", h)
+
+	if err := helpers.RenderPage(w, r, "host", vars, nil); err != nil {
 		printTemplateError(w, err)
 	}
+}
+
+// PostHost handles posting of host form
+func (repo *DBRepo) PostHost(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+
+	var h models.Host
+
+	if id > 0 {
+		// get the host from the database
+		host, err := repo.DB.GetHostByID(id)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		h = host
+	}
+
+	h.HostName = r.Form.Get("host_name")
+	h.CanonicalName = r.Form.Get("canonical_name")
+	h.URL = r.Form.Get("url")
+	h.IP = r.Form.Get("ip")
+	h.IPv6 = r.Form.Get("ipv6")
+	h.Location = r.Form.Get("location")
+	h.OS = r.Form.Get("os")
+	active, _ := strconv.Atoi(r.Form.Get("active"))
+	h.Active = active
+
+	if id > 0 {
+		err := repo.DB.UpdateHost(h)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		newID, err := repo.DB.InsertHost(h)
+		if err != nil {
+			log.Println(err)
+			helpers.ServerError(w, r, err)
+			return
+		}
+		h.ID = newID
+	}
+
+	repo.App.Session.Put(r.Context(), "flash", "Changes saved")
+	http.Redirect(w, r, fmt.Sprintf("/admin/host/%d", h.ID), http.StatusSeeOther)
 }
 
 // AllUsers lists all admin users
@@ -147,8 +231,7 @@ func (repo *DBRepo) AllUsers(w http.ResponseWriter, r *http.Request) {
 
 	vars.Set("users", u)
 
-	err = helpers.RenderPage(w, r, "users", vars, nil)
-	if err != nil {
+	if err = helpers.RenderPage(w, r, "users", vars, nil); err != nil {
 		printTemplateError(w, err)
 	}
 }
@@ -164,7 +247,7 @@ func (repo *DBRepo) OneUser(w http.ResponseWriter, r *http.Request) {
 
 	if id > 0 {
 
-		u, err := repo.DB.GetUserById(id)
+		u, err := repo.DB.GetUserByID(id)
 		if err != nil {
 			ClientError(w, r, http.StatusBadRequest)
 			return
@@ -176,8 +259,7 @@ func (repo *DBRepo) OneUser(w http.ResponseWriter, r *http.Request) {
 		vars.Set("user", u)
 	}
 
-	err = helpers.RenderPage(w, r, "user", vars, nil)
-	if err != nil {
+	if err = helpers.RenderPage(w, r, "user", vars, nil); err != nil {
 		printTemplateError(w, err)
 	}
 }
@@ -192,7 +274,7 @@ func (repo *DBRepo) PostOneUser(w http.ResponseWriter, r *http.Request) {
 	var u models.User
 
 	if id > 0 {
-		u, _ = repo.DB.GetUserById(id)
+		u, _ = repo.DB.GetUserByID(id)
 		u.FirstName = r.Form.Get("first_name")
 		u.LastName = r.Form.Get("last_name")
 		u.Email = r.Form.Get("email")
@@ -275,5 +357,34 @@ func show500(w http.ResponseWriter, r *http.Request) {
 }
 
 func printTemplateError(w http.ResponseWriter, err error) {
-	_, _ = fmt.Fprint(w, fmt.Sprintf(`<small><span class='text-danger'>Error executing template: %s</span></small>`, err))
+	_, _ = fmt.Fprintf(w, `<small><span class='text-danger'>Error executing template: %s</span></small>`, err)
+}
+
+type serviceJSON struct {
+	OK bool `json:"ok"`
+}
+
+// ToggleServiceForHost turns a host service on or off (active or inactive)
+func (repo *DBRepo) ToggleServiceForHost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	var resp serviceJSON
+	resp.OK = true
+
+	hostID, _ := strconv.Atoi(r.Form.Get("host_id"))
+	serviceID, _ := strconv.Atoi(r.Form.Get("service_id"))
+	active, _ := strconv.Atoi(r.Form.Get("active"))
+
+	err = repo.DB.UpdateHostServiceStatus(hostID, serviceID, active)
+	if err != nil {
+		log.Println(err)
+		resp.OK = false
+	}
+
+	out, _ := json.Marshal(resp)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
 }

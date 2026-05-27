@@ -82,7 +82,7 @@ func CheckRemember(next http.Handler) http.Handler {
 					if validHash {
 						// valid remember me token, so log the user in
 						_ = session.RenewToken(r.Context())
-						user, _ := repo.DB.GetUserById(id)
+						user, _ := repo.DB.GetUserByID(id)
 						hashedPassword := user.Password
 						session.Put(r.Context(), "userID", id)
 						session.Put(r.Context(), "userName", user.FirstName)

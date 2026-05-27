@@ -98,7 +98,7 @@ Host
 
                             <div class="mb-3">
                                 <label for="ipv6" class="form-label">IP Address (v6)</label>
-                                <input id="ipv6" name="ipv6" value="{{host.IPV6}}" type="text" class="form-control">
+                                <input id="ipv6" name="ipv6" value="{{host.IPv6}}" type="text" class="form-control">
                             </div>
                         </div>
 

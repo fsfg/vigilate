@@ -45,8 +45,8 @@ func (m *postgresDBRepo) AllUsers() ([]*models.User, error) {
 	return users, nil
 }
 
-// GetUserById returns a user by id
-func (m *postgresDBRepo) GetUserById(id int) (models.User, error) {
+// GetUserByID returns a user by id
+func (m *postgresDBRepo) GetUserByID(id int) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -180,19 +180,19 @@ func (m *postgresDBRepo) InsertUser(u models.User) (int, error) {
 		)
     VALUES($1, $2, $3, $4, $5, $6) returning id `
 
-	var newId int
+	var newID int
 	err = m.DB.QueryRowContext(ctx, stmt,
 		u.FirstName,
 		u.LastName,
 		u.Email,
 		hashedPassword,
 		u.AccessLevel,
-		&u.UserActive).Scan(&newId)
+		&u.UserActive).Scan(&newID)
 	if err != nil {
 		return 0, err
 	}
 
-	return newId, err
+	return newID, err
 }
 
 // UpdateUser updates a user by id

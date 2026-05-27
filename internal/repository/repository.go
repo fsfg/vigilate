@@ -1,3 +1,4 @@
+// Package repository
 package repository
 
 import "github.com/tsawler/vigilate/internal/models"
@@ -10,7 +11,7 @@ type DatabaseRepo interface {
 	InsertOrUpdateSitePreferences(pm map[string]string) error
 
 	// users and authentication
-	GetUserById(id int) (models.User, error)
+	GetUserByID(id int) (models.User, error)
 	InsertUser(u models.User) (int, error)
 	UpdateUser(u models.User) error
 	DeleteUser(id int) error
@@ -20,4 +21,15 @@ type DatabaseRepo interface {
 	InsertRememberMeToken(id int, token string) error
 	DeleteToken(token string) error
 	CheckForToken(id int, token string) bool
+
+	// hosts
+	InsertHost(h models.Host) (int, error)
+	GetHostByID(id int) (models.Host, error)
+	UpdateHost(h models.Host) error
+	AllHosts() ([]models.Host, error)
+	UpdateHostServiceStatus(hostID, serviceID, active int) error
+	GetAllServiceStatusCounts() (models.AllServiceStatusCounts, error)
+	GetServicesByStatus(status string) ([]models.HostService, error)
+	GetHostServiceByID(id int) (models.HostService, error)
+	UpdateHostService(hs models.HostService) error
 }

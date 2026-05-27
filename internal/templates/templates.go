@@ -1,3 +1,4 @@
+// Package templates
 package templates
 
 import (
