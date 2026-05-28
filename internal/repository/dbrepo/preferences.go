@@ -52,10 +52,10 @@ func (m *postgresDBRepo) SetSystemPref(name, value string) error {
 	_, _ = m.DB.ExecContext(ctx, stmt, name)
 
 	query := `
-	INSERT INTO preferences (
-		name, preference, created_at, updated_at
-	)
-	VALUES ($1, $2, $3, $4)
+	INSERT INTO preferences
+		(name, preference, created_at, updated_at)
+	VALUES
+		($1, $2, $3, $4)
 	`
 
 	_, err := m.DB.ExecContext(ctx, query, name, value, time.Now(), time.Now())

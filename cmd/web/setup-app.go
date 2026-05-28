@@ -109,7 +109,7 @@ func setupApp() (*string, error) {
 	handlers.NewHandlers(repo, &app)
 
 	log.Println("Getting preferences...")
-	preferenceMap = map[string]string{}
+	preferenceMap = make(map[string]string)
 	preferences, err := repo.DB.AllPreferences()
 	if err != nil {
 		log.Fatal("Cannot read preferences:", err)
@@ -140,7 +140,7 @@ func setupApp() (*string, error) {
 	log.Println("Secure", *pusherSecure)
 
 	app.WsClient = wsClient
-	monitorMap := map[int]cron.EntryID{}
+	monitorMap := make(map[int]cron.EntryID)
 	app.MonitorMap = monitorMap
 
 	localZone, _ := time.LoadLocation("Local")
@@ -154,6 +154,10 @@ func setupApp() (*string, error) {
 	app.Scheduler = scheduler
 
 	go handlers.Repo.StartMonitoring()
+
+	if app.PreferenceMap["monitoring_live"] == "1" {
+		app.Scheduler.Start()
+	}
 
 	helpers.NewHelpers(&app)
 

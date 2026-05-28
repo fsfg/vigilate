@@ -14,18 +14,19 @@ func (m *postgresDBRepo) InsertHost(h models.Host) (int, error) {
 	defer cancel()
 
 	query := `
-	INSERT INTO hosts (
-		host_name,
-		canonical_name,
-		url,
-		ip,
-		ipv6,
-		location,
-		os,
-		active,
-		created_at,
-		updated_at
-	)
+	INSERT INTO hosts
+		(
+			host_name,
+			canonical_name,
+			url,
+			ip,
+			ipv6,
+			location,
+			os,
+			active,
+			created_at,
+			updated_at
+		)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	RETURNING id;
 	`
@@ -50,16 +51,17 @@ func (m *postgresDBRepo) InsertHost(h models.Host) (int, error) {
 
 	// add host services and set to inactive
 	query = `
-	INSERT INTO host_services (
-		host_id,
-		service_id,
-		active,
-		schedule_number,
-		schedule_unit,
-		status,
-		created_at,
-		updated_at
-	)
+	INSERT INTO host_services
+		(
+			host_id,
+			service_id,
+			active,
+			schedule_number,
+			schedule_unit,
+			status,
+			created_at,
+			updated_at
+		)
 	VALUES ($1, 1, 0, 3, 'm', 'pending', $2, $3)
 	`
 
@@ -81,9 +83,10 @@ func (m *postgresDBRepo) GetHostByID(id int) (models.Host, error) {
 
 	query := `
 	SELECT
-		id, host_name, canonical_name, url, ip, ipv6, location, os, active, created_at, updated_at
-	FROM
-		hosts WHERE id = $1
+		id, host_name, canonical_name, url, ip, ipv6,
+		location, os, active, created_at, updated_at
+	FROM hosts
+	WHERE id = $1
 	`
 
 	row := m.DB.QueryRowContext(ctx, query, id)
@@ -274,7 +277,8 @@ func (m *postgresDBRepo) AllHosts() ([]models.Host, error) {
 		SELECT
 			hs.id, hs.host_id, hs.service_id, hs.active, hs.schedule_number, hs.schedule_unit,
 			hs.last_check, hs.status, hs.created_at, hs.updated_at,
-			s.id, s.service_name, s.active, s.icon, s.created_at, s.updated_at
+			s.id, s.service_name, s.active, s.icon, s.created_at, s.updated_at,
+			hs.last_message
 		FROM
 			host_services hs
 			LEFT JOIN services s ON (s.id = hs.service_id)
@@ -309,6 +313,7 @@ func (m *postgresDBRepo) AllHosts() ([]models.Host, error) {
 				&hs.Service.Icon,
 				&hs.Service.CreatedAt,
 				&hs.Service.UpdatedAt,
+				&hs.LastMessage,
 			)
 			if err != nil {
 				log.Println(err)
@@ -361,9 +366,9 @@ func (m *postgresDBRepo) UpdateHostService(hs models.HostService) error {
 	SET
 		host_id = $1, service_id = $2, active = $3,
 		schedule_number = $4, schedule_unit = $5,
-		last_check = $6, status = $7, updated_at = $8
+		last_check = $6, status = $7, updated_at = $8, last_message = $9
 	WHERE
-		id = $9
+		id = $10
 	`
 
 	_, err := m.DB.ExecContext(ctx, query,
@@ -375,6 +380,7 @@ func (m *postgresDBRepo) UpdateHostService(hs models.HostService) error {
 		hs.LastCheck,
 		hs.Status,
 		hs.UpdatedAt,
+		hs.LastMessage,
 		hs.ID,
 	)
 	if err != nil {
@@ -392,7 +398,7 @@ func (m *postgresDBRepo) GetServicesByStatus(status string) ([]models.HostServic
 	SELECT
 		hs.id, hs.host_id, hs.service_id, hs.active, hs.schedule_number, hs.schedule_unit,
 		hs.last_check, hs.status, hs.created_at, hs.updated_at,
-		h.host_name, s.service_name
+		h.host_name, s.service_name, hs.last_message
 	FROM
 		host_services hs
 		left join hosts h on (hs.host_id = h.id)
@@ -428,6 +434,7 @@ func (m *postgresDBRepo) GetServicesByStatus(status string) ([]models.HostServic
 			&h.UpdatedAt,
 			&h.HostName,
 			&h.Service.ServiceName,
+			&h.LastMessage,
 		)
 		if err != nil {
 			return nil, err
@@ -448,11 +455,14 @@ func (m *postgresDBRepo) GetHostServiceByID(id int) (models.HostService, error) 
 	SELECT
 		hs.id, hs.host_id, hs.service_id, hs.active, hs.schedule_number,
 		hs.schedule_unit, hs.last_check, hs.status, hs.created_at, hs.updated_at,
-		s.id, s.service_name, s.active, s.icon, s.created_at, s.updated_at
+		s.id, s.service_name, s.active, s.icon, s.created_at, s.updated_at,
+		h.host_name, hs.last_message
 	FROM
 		host_services hs
 	LEFT JOIN
 		services s ON (hs.service_id = s.id)
+	LEFT JOIN
+		hosts h ON (hs.host_id = h.id)
 	WHERE
 		hs.id = $1
 	`
@@ -478,6 +488,8 @@ func (m *postgresDBRepo) GetHostServiceByID(id int) (models.HostService, error) 
 		&hs.Service.Icon,
 		&hs.Service.CreatedAt,
 		&hs.Service.UpdatedAt,
+		&hs.HostName,
+		&hs.LastMessage,
 	)
 
 	if err != nil {
@@ -497,7 +509,7 @@ func (m *postgresDBRepo) GetServicesToMonitor() ([]models.HostService, error) {
 	SELECT hs.id, hs.host_id, hs.service_id, hs.active, hs.schedule_number,
 		hs.schedule_unit, hs.last_check, hs.status, hs.created_at, hs.updated_at,
 		s.id, s.service_name, s.active, s.icon, s.created_at, s.updated_at,
-		h.host_name
+		h.host_name, hs.last_message
 	FROM
 		host_services hs
 	LEFT JOIN services s
@@ -537,6 +549,7 @@ func (m *postgresDBRepo) GetServicesToMonitor() ([]models.HostService, error) {
 			&h.Service.CreatedAt,
 			&h.Service.UpdatedAt,
 			&h.HostName,
+			&h.LastMessage,
 		)
 		if err != nil {
 			log.Println(err)
@@ -546,4 +559,128 @@ func (m *postgresDBRepo) GetServicesToMonitor() ([]models.HostService, error) {
 	}
 
 	return services, nil
+}
+
+// GetHostServiceByHostIDServiceID gets a host service by host id and service id
+func (m *postgresDBRepo) GetHostServiceByHostIDServiceID(hostID, serviceID int) (models.HostService, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `
+	SELECT
+		hs.id, hs.host_id, hs.service_id, hs.active, hs.schedule_number,
+		hs.schedule_unit, hs.last_check, hs.status, hs.created_at, hs.updated_at,
+		s.id, s.service_name, s.active, s.icon, s.created_at, s.updated_at, h.host_name,
+		hs.last_message
+	FROM host_services hs
+	LEFT JOIN services s ON (hs.service_id = s.id)
+	LEFT JOIN hosts h ON (hs.host_id = h.id)
+	WHERE hs.host_id = $1 AND hs.service_id = $2
+	`
+
+	var hs models.HostService
+
+	row := m.DB.QueryRowContext(ctx, query, hostID, serviceID)
+
+	err := row.Scan(
+		&hs.ID,
+		&hs.HostID,
+		&hs.ServiceID,
+		&hs.Active,
+		&hs.ScheduleNumber,
+		&hs.ScheduleUnit,
+		&hs.LastCheck,
+		&hs.Status,
+		&hs.CreatedAt,
+		&hs.UpdatedAt,
+		&hs.Service.ID,
+		&hs.Service.ServiceName,
+		&hs.Service.Active,
+		&hs.Service.Icon,
+		&hs.Service.CreatedAt,
+		&hs.Service.UpdatedAt,
+		&hs.HostName,
+		&hs.LastMessage,
+	)
+
+	if err != nil {
+		log.Println(err)
+		return hs, err
+	}
+
+	return hs, nil
+}
+
+// InsertEvent inserts an event into the database
+func (m *postgresDBRepo) InsertEvent(e models.Event) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `
+	INSERT INTO events (
+		host_service_id, event_type, host_id, service_name, host_name,
+		message, created_at, updated_at
+	)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		e.HostServiceID,
+		e.EventType,
+		e.HostID,
+		e.ServiceName,
+		e.HostName,
+		e.Message,
+		time.Now(),
+		time.Now(),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetAllEvents gets all events
+func (m *postgresDBRepo) GetAllEvents() ([]models.Event, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `
+	SELECT
+		id, event_type, host_service_id, host_id, service_name, host_name,
+		message, created_at, updated_at
+	FROM events
+	ORDER BY created_at
+	`
+
+	var events []models.Event
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return events, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var ev models.Event
+		err := rows.Scan(
+			&ev.ID,
+			&ev.EventType,
+			&ev.HostServiceID,
+			&ev.HostID,
+			&ev.ServiceName,
+			&ev.HostName,
+			&ev.Message,
+			&ev.CreatedAt,
+			&ev.UpdatedAt,
+		)
+		if err != nil {
+			return events, err
+		}
+		events = append(events, ev)
+	}
+
+	return events, nil
 }

@@ -24,18 +24,19 @@ func routes() http.Handler {
 
 	mux.Get("/user/logout", handlers.Repo.Logout)
 
+	// our pusher routes
 	mux.Route("/pusher", func(mux chi.Router) {
 		mux.Use(Auth)
-
 		mux.Post("/auth", handlers.Repo.PusherAuth)
-
-		mux.Get("/test", handlers.Repo.TestPusher)
 	})
 
 	// admin routes
 	mux.Route("/admin", func(mux chi.Router) {
 		// all admin routes are protected
 		mux.Use(Auth)
+
+		// sample code for sending to private channel
+		mux.Get("/private-message", handlers.Repo.SendPrivateMessage)
 
 		// overview
 		mux.Get("/overview", handlers.Repo.AdminDashboard)
