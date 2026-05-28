@@ -16,8 +16,11 @@ func (m *postgresDBRepo) AllUsers() ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `SELECT id, last_name, first_name, email, user_active, created_at, updated_at FROM users
-		where deleted_at is null`
+	stmt := `
+	SELECT id, last_name, first_name, email, user_active, created_at, updated_at
+	FROM users
+	WHERE deleted_at IS null
+	`
 
 	rows, err := m.DB.QueryContext(ctx, stmt)
 	if err != nil {
@@ -50,9 +53,13 @@ func (m *postgresDBRepo) GetUserByID(id int) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `SELECT id, first_name, last_name,  user_active, access_level, email,
-			created_at, updated_at
-			FROM users where id = $1`
+	stmt := `
+	SELECT
+		id, first_name, last_name,  user_active, access_level, email,
+		created_at, updated_at
+	FROM users
+	WHERE id = $1
+	`
 	row := m.DB.QueryRowContext(ctx, stmt, id)
 
 	var u models.User
@@ -86,13 +93,14 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 	var userActive int
 
 	query := `
-		select
-		    id, password, user_active
-		from
-			users
-		where
-			email = $1
-			and deleted_at is null`
+	SELECT
+		id, password, user_active
+	FROM
+		users
+	WHERE
+		email = $1
+		AND deleted_at IS null
+	`
 
 	row := m.DB.QueryRowContext(ctx, query, email)
 	err := row.Scan(&id, &hashedPassword, &userActive)
@@ -124,7 +132,12 @@ func (m *postgresDBRepo) InsertRememberMeToken(id int, token string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := "insert into remember_tokens (user_id, remember_token) values ($1, $2)"
+	stmt := `
+	INSERT INTO remember_tokens
+		(user_id, remember_token)
+	VALUES
+		($1, $2)
+	`
 	_, err := m.DB.ExecContext(ctx, stmt, id, token)
 	if err != nil {
 		return err
@@ -137,7 +150,10 @@ func (m *postgresDBRepo) DeleteToken(token string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := "delete from remember_tokens where remember_token = $1"
+	stmt := `
+	DELETE FROM remember_tokens
+	WHERE remember_token = $1
+	`
 	_, err := m.DB.ExecContext(ctx, stmt, token)
 	if err != nil {
 		return err
@@ -151,7 +167,13 @@ func (m *postgresDBRepo) CheckForToken(id int, token string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := "SELECT id  FROM remember_tokens where user_id = $1 and remember_token = $2"
+	stmt := `
+	SELECT id
+	FROM remember_tokens
+	WHERE
+		user_id = $1
+		AND remember_token = $2
+	`
 	row := m.DB.QueryRowContext(ctx, stmt, id, token)
 	err := row.Scan(&id)
 	return err == nil
@@ -171,28 +193,31 @@ func (m *postgresDBRepo) InsertUser(u models.User) (int, error) {
 	stmt := `
 	INSERT INTO users
 	    (
-		first_name,
-		last_name,
-		email,
-		password,
-		access_level,
-		user_active
+			first_name,
+			last_name,
+			email,
+			password,
+			access_level,
+			user_active
 		)
-    VALUES($1, $2, $3, $4, $5, $6) returning id `
+    VALUES
+		($1, $2, $3, $4, $5, $6)
+	RETURNING id
+	`
 
-	var newID int
+	var newId int
 	err = m.DB.QueryRowContext(ctx, stmt,
 		u.FirstName,
 		u.LastName,
 		u.Email,
 		hashedPassword,
 		u.AccessLevel,
-		&u.UserActive).Scan(&newID)
+		&u.UserActive).Scan(&newId)
 	if err != nil {
 		return 0, err
 	}
 
-	return newID, err
+	return newId, err
 }
 
 // UpdateUser updates a user by id
@@ -201,17 +226,18 @@ func (m *postgresDBRepo) UpdateUser(u models.User) error {
 	defer cancel()
 
 	stmt := `
-		update
-			users
-		set
-			first_name = $1,
-			last_name = $2,
-			user_active = $3,
-			email = $4,
-			access_level = $5,
-			updated_at = $6
-		where
-			id = $7`
+	UPDATE
+		users
+	SET
+		first_name = $1,
+		last_name = $2,
+		user_active = $3,
+		email = $4,
+		access_level = $5,
+		updated_at = $6
+	WHERE
+		id = $7
+	`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		u.FirstName,
@@ -235,7 +261,12 @@ func (m *postgresDBRepo) DeleteUser(id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `update users set deleted_at = $1, user_active = 0  where id = $2`
+	stmt := `
+	UPDATE users
+	SET
+		deleted_at = $1, user_active = 0
+	WHERE id = $2
+	`
 
 	_, err := m.DB.ExecContext(ctx, stmt, time.Now(), id)
 	if err != nil {
@@ -258,7 +289,11 @@ func (m *postgresDBRepo) UpdatePassword(id int, newPassword string) error {
 		return err
 	}
 
-	stmt := `update users set password = $1 where id = $2`
+	stmt := `
+	UPDATE users
+	SET password = $1
+	WHERE id = $2
+	`
 	_, err = m.DB.ExecContext(ctx, stmt, hashedPassword, id)
 	if err != nil {
 		log.Println(err)
@@ -266,7 +301,10 @@ func (m *postgresDBRepo) UpdatePassword(id int, newPassword string) error {
 	}
 
 	// delete all remember tokens, if any
-	stmt = "delete from remember_tokens where user_id = $1"
+	stmt = `
+	DELETE FROM remember_tokens
+	WHERE user_id = $1
+	`
 	_, err = m.DB.ExecContext(ctx, stmt, id)
 	if err != nil {
 		return err

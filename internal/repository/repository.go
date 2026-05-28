@@ -9,6 +9,7 @@ type DatabaseRepo interface {
 	AllPreferences() ([]models.Preference, error)
 	SetSystemPref(name, value string) error
 	InsertOrUpdateSitePreferences(pm map[string]string) error
+	UpdateSystemPref(name, value string) error
 
 	// users and authentication
 	GetUserByID(id int) (models.User, error)
@@ -32,4 +33,5 @@ type DatabaseRepo interface {
 	GetServicesByStatus(status string) ([]models.HostService, error)
 	GetHostServiceByID(id int) (models.HostService, error)
 	UpdateHostService(hs models.HostService) error
+	GetServicesToMonitor() ([]models.HostService, error)
 }

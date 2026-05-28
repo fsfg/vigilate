@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/tsawler/vigilate/internal/models"
 )
@@ -27,12 +27,17 @@ const (
 type jsonResp struct {
 	OK            bool      `json:"ok"`
 	Message       string    `json:"message"`
-	ServiceID     int       `json:"service_id"`
-	HostServiceID int       `json:"host_service_id"`
-	HostID        int       `json:"host_id"`
-	OldStatus     string    `json:"old_status"`
-	NewStatus     string    `json:"new_status"`
-	LastCheck     time.Time `json:"last_check"`
+	ServiceID     int       `json:"service_id,omitempty"`
+	HostServiceID int       `json:"host_service_id,omitempty"`
+	HostID        int       `json:"host_id,omitempty"`
+	OldStatus     string    `json:"old_status,omitempty"`
+	NewStatus     string    `json:"new_status,omitempty"`
+	LastCheck     time.Time `json:"last_check,omitempty,omitzero"`
+}
+
+// ScheduledCheck performs a scheduled check on a host service by id
+func (repo *DBRepo) ScheduledCheck(hostServiceID int) {
+
 }
 
 // TestCheck manually tests a host service and sends JSON response
