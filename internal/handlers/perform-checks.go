@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/tsawler/vigilate/internal/certificateutils"
 	"github.com/tsawler/vigilate/internal/channeldata"
 	"github.com/tsawler/vigilate/internal/helpers"
 	"github.com/tsawler/vigilate/internal/models"
@@ -185,6 +186,12 @@ func (repo *DBRepo) testServiceForHost(h models.Host, hs models.HostService) (st
 	case HTTP:
 		msg, newStatus = testHTTPForHost(h.URL)
 		// break
+
+	case HTTPS:
+		msg, newStatus = testHTTPSForHost(h.URL)
+
+	case SSLCertificate:
+		msg, newStatus = testSSLForHost(h.URL)
 	}
 
 	// broadcast to clients if appropriate
@@ -340,6 +347,71 @@ func testHTTPForHost(url string) (string, string) {
 	}
 
 	return fmt.Sprintf("%s - %s", url, resp.Status), "healthy"
+}
+
+// testHTTPSForHost tests HTTPS service
+func testHTTPSForHost(url string) (string, string) {
+	url = strings.ReplaceAll(url, "https://", "http://")
+	url = strings.ReplaceAll(url, "http://", "https://")
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Sprintf("%s - %s", url, "error connecting"), "problem"
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Sprintf("%s - %s", url, resp.Status), "problem"
+	}
+
+	return fmt.Sprintf("%s - %s", url, resp.Status), "healthy"
+}
+
+func testSSLForHost(url string) (string, string) {
+	url = strings.ReplaceAll(url, "http://", "")
+	url = strings.ReplaceAll(url, "https://", "")
+
+	// scanning ssl cert for expiry date
+	var certDetailsChannel chan certificateutils.CertificateDetails
+	var errorsChannel chan error
+	certDetailsChannel = make(chan certificateutils.CertificateDetails, 1)
+	errorsChannel = make(chan error, 1)
+
+	scanHost(url, certDetailsChannel, errorsChannel)
+
+	var msg, newStatus string
+
+	for i, certDetailsInQueue := 0, len(certDetailsChannel); i < certDetailsInQueue; i++ {
+		certDetails := <-certDetailsChannel
+		certificateutils.CheckExpirationStatus(&certDetails, 30)
+
+		if certDetails.ExpiringSoon {
+
+			if certDetails.DaysUntilExpiration < 7 {
+				msg = certDetails.Hostname + " expiring in " + strconv.Itoa(certDetails.DaysUntilExpiration) + " days"
+				newStatus = "problem"
+			} else {
+				msg = certDetails.Hostname + " expiring in " + strconv.Itoa(certDetails.DaysUntilExpiration) + " days"
+				newStatus = "warning"
+			}
+		} else {
+			msg = certDetails.Hostname + " expiring in " + strconv.Itoa(certDetails.DaysUntilExpiration) + " days"
+			newStatus = "healthy"
+		}
+
+	}
+
+	return msg, newStatus
+}
+
+// scanHost gets cert details from an internet host
+func scanHost(hostname string, certDetailsChannel chan certificateutils.CertificateDetails, errorsChannel chan error) {
+	res, err := certificateutils.GetCertificateDetails(hostname, 10)
+	if err != nil {
+		errorsChannel <- err
+	} else {
+		certDetailsChannel <- res
+	}
 }
 
 func (repo *DBRepo) addToMonitorMap(hs models.HostService) {

@@ -62,7 +62,8 @@ func (m *postgresDBRepo) InsertHost(h models.Host) (int, error) {
 			created_at,
 			updated_at
 		)
-	VALUES ($1, 1, 0, 3, 'm', 'pending', $2, $3)
+	SELECT $1, s.id, 0, 3, 'm', 'pending', $2, $3
+	FROM services s
 	`
 
 	if _, err := m.DB.ExecContext(ctx, query,
@@ -122,6 +123,7 @@ func (m *postgresDBRepo) GetHostByID(id int) (models.Host, error) {
 		LEFT JOIN services s ON (s.id = hs.service_id)
 	WHERE
 		host_id = $1
+	ORDER BY s.service_name
 	`
 
 	rows, err := m.DB.QueryContext(ctx, query, h.ID)
