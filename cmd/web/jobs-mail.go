@@ -87,14 +87,11 @@ func (d *Dispatcher) run() {
 
 // dispatch dispatches worker
 func (d *Dispatcher) dispatch() {
-	for {
-		select {
-		case job := <-d.jobQueue:
-			go func() {
-				workerJobQueue := <-d.workerPool
-				workerJobQueue <- job
-			}()
-		}
+	for job := range d.jobQueue {
+		go func() {
+			workerJobQueue := <-d.workerPool
+			workerJobQueue <- job
+		}()
 	}
 }
 
