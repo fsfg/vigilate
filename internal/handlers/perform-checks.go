@@ -12,11 +12,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tsawler/vigilate/internal/certificateutils"
-	"github.com/tsawler/vigilate/internal/channeldata"
-	"github.com/tsawler/vigilate/internal/helpers"
-	"github.com/tsawler/vigilate/internal/models"
-	"github.com/tsawler/vigilate/internal/sms"
+	"gitlab.com/fsfg/vigilate/internal/certificateutils"
+	"gitlab.com/fsfg/vigilate/internal/channeldata"
+	"gitlab.com/fsfg/vigilate/internal/helpers"
+	"gitlab.com/fsfg/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/sms"
 )
 
 const (

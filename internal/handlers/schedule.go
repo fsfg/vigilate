@@ -8,8 +8,8 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 
-	"github.com/tsawler/vigilate/internal/helpers"
-	"github.com/tsawler/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/helpers"
+	"gitlab.com/fsfg/vigilate/internal/models"
 )
 
 // ByHost allows us to sort by host

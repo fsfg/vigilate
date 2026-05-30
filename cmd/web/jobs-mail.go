@@ -12,7 +12,7 @@ import (
 	mail "github.com/xhit/go-simple-mail/v2"
 	"jaytaylor.com/html2text"
 
-	"github.com/tsawler/vigilate/internal/channeldata"
+	"gitlab.com/fsfg/vigilate/internal/channeldata"
 )
 
 // NewWorker takes a numeric id and a channel w/ worker pool.

@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tsawler/vigilate/internal/handlers"
+	"gitlab.com/fsfg/vigilate/internal/handlers"
 )
 
 func routes() http.Handler {

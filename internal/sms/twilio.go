@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tsawler/vigilate/internal/config"
+	"gitlab.com/fsfg/vigilate/internal/config"
 )
 
 func SendTextTwilio(to, msg string, app *config.AppConfig) error {

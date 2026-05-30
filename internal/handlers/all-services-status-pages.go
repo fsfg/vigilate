@@ -6,7 +6,7 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 
-	"github.com/tsawler/vigilate/internal/helpers"
+	"gitlab.com/fsfg/vigilate/internal/helpers"
 )
 
 // AllHealthyServices lists all healthy services

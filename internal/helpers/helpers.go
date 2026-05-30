@@ -12,9 +12,9 @@ import (
 	"github.com/CloudyKit/jet/v6"
 	"github.com/justinas/nosurf"
 
-	"github.com/tsawler/vigilate/internal/config"
-	"github.com/tsawler/vigilate/internal/models"
-	"github.com/tsawler/vigilate/internal/templates"
+	"gitlab.com/fsfg/vigilate/internal/config"
+	"gitlab.com/fsfg/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/templates"
 )
 
 const (

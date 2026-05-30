@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/tsawler/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/models"
 )
 
 // AllUsers returns all users

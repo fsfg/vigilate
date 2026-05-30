@@ -10,9 +10,9 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/pusher/pusher-http-go"
-	"github.com/tsawler/vigilate/internal/config"
-	"github.com/tsawler/vigilate/internal/handlers"
-	"github.com/tsawler/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/config"
+	"gitlab.com/fsfg/vigilate/internal/handlers"
+	"gitlab.com/fsfg/vigilate/internal/models"
 )
 
 var app config.AppConfig

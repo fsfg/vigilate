@@ -9,7 +9,7 @@ import (
 
 	"github.com/justinas/nosurf"
 
-	"github.com/tsawler/vigilate/internal/helpers"
+	"gitlab.com/fsfg/vigilate/internal/helpers"
 )
 
 // SessionLoad loads the session on requests

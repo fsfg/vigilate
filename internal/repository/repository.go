@@ -1,7 +1,7 @@
 // Package repository
 package repository
 
-import "github.com/tsawler/vigilate/internal/models"
+import "gitlab.com/fsfg/vigilate/internal/models"
 
 // DatabaseRepo is the database repository
 type DatabaseRepo interface {

@@ -12,12 +12,12 @@ import (
 	"github.com/CloudyKit/jet/v6"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tsawler/vigilate/internal/config"
-	"github.com/tsawler/vigilate/internal/driver"
-	"github.com/tsawler/vigilate/internal/helpers"
-	"github.com/tsawler/vigilate/internal/models"
-	"github.com/tsawler/vigilate/internal/repository"
-	"github.com/tsawler/vigilate/internal/repository/dbrepo"
+	"gitlab.com/fsfg/vigilate/internal/config"
+	"gitlab.com/fsfg/vigilate/internal/driver"
+	"gitlab.com/fsfg/vigilate/internal/helpers"
+	"gitlab.com/fsfg/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/repository"
+	"gitlab.com/fsfg/vigilate/internal/repository/dbrepo"
 )
 
 // Repo is the repository

@@ -13,11 +13,11 @@ import (
 	"github.com/pusher/pusher-http-go"
 	"github.com/robfig/cron/v3"
 
-	"github.com/tsawler/vigilate/internal/channeldata"
-	"github.com/tsawler/vigilate/internal/config"
-	"github.com/tsawler/vigilate/internal/driver"
-	"github.com/tsawler/vigilate/internal/handlers"
-	"github.com/tsawler/vigilate/internal/helpers"
+	"gitlab.com/fsfg/vigilate/internal/channeldata"
+	"gitlab.com/fsfg/vigilate/internal/config"
+	"gitlab.com/fsfg/vigilate/internal/driver"
+	"gitlab.com/fsfg/vigilate/internal/handlers"
+	"gitlab.com/fsfg/vigilate/internal/helpers"
 )
 
 func setupApp() (*string, error) {

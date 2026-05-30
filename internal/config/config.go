@@ -7,9 +7,9 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/robfig/cron/v3"
 
-	"github.com/tsawler/vigilate/internal/channeldata"
-	"github.com/tsawler/vigilate/internal/driver"
-	"github.com/tsawler/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/channeldata"
+	"gitlab.com/fsfg/vigilate/internal/driver"
+	"gitlab.com/fsfg/vigilate/internal/models"
 )
 
 // AppConfig holds application configuration

@@ -1,8 +1,6 @@
 
 # Vigilate
 
-This is the source code for the second project in the Udemy course Working with Websockets in Go (Golang).
-
 A dead simple monitoring service, intended to replace things like Nagios.
 
 ## Build
@@ -11,12 +9,6 @@ Build in the normal way on Mac/Linux:
 
 ~~~
 go build -o vigilate cmd/web/*.go
-~~~
-
-Or on Windows:
-
-~~~
-go build -o vigilate.exe cmd/web/.
 ~~~
 
 Or for a particular platform:

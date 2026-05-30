@@ -1,7 +1,7 @@
 package dbrepo
 
 import (
-	"github.com/tsawler/vigilate/internal/models"
+	"gitlab.com/fsfg/vigilate/internal/models"
 )
 
 // AllUsers returns all users

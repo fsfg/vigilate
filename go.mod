@@ -1,4 +1,4 @@
-module github.com/tsawler/vigilate
+module gitlab.com/fsfg/vigilate
 
 go 1.26.3
 
