@@ -97,6 +97,11 @@ func (d *Dispatcher) dispatch() {
 
 // processMailQueueJob processes the main queue job (sends email)
 func (w Worker) processMailQueueJob(mailMessage channeldata.MailData) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic: %v", r)
+		}
+	}()
 
 	data := struct {
 		Content       template.HTML
@@ -195,8 +200,7 @@ func (w Worker) processMailQueueJob(mailMessage channeldata.MailData) {
 	email.SetBody(mail.TextHTML, formattedMessage)
 	email.AddAlternative(mail.TextPlain, plainText)
 
-	err = email.Send(smtpClient)
-	if err != nil {
+	if err = email.Send(smtpClient); err != nil {
 		log.Println(err)
 	} else {
 		log.Println("Email Sent")
