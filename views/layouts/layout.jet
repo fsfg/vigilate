@@ -17,6 +17,10 @@
           integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous"/>
     <link href="/static/admin/css/app.css" rel="stylesheet">
 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+    </style>
+
     <!-- override styles in adminkit.io's template & other css -->
     <style>
         label {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/pusher/pusher-http-go"
+
 	"gitlab.com/fsfg/vigilate/internal/config"
 	"gitlab.com/fsfg/vigilate/internal/handlers"
 	"gitlab.com/fsfg/vigilate/internal/models"

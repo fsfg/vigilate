@@ -1,9 +1,7 @@
 // Package templates
 package templates
 
-import (
-	"gitlab.com/fsfg/vigilate/internal/models"
-)
+import "gitlab.com/fsfg/vigilate/internal/models"
 
 // TemplateData defines template data
 type TemplateData struct {

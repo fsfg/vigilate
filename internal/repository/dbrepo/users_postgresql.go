@@ -205,19 +205,19 @@ func (m *postgresDBRepo) InsertUser(u models.User) (int, error) {
 	RETURNING id
 	`
 
-	var newId int
+	var newID int
 	err = m.DB.QueryRowContext(ctx, stmt,
 		u.FirstName,
 		u.LastName,
 		u.Email,
 		hashedPassword,
 		u.AccessLevel,
-		&u.UserActive).Scan(&newId)
+		&u.UserActive).Scan(&newID)
 	if err != nil {
 		return 0, err
 	}
 
-	return newId, err
+	return newID, err
 }
 
 // UpdateUser updates a user by id
